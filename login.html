@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>CLINIC CLOUD STORAGE</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+    </head>
+
+    <body class="bg-gray-100 flex items-center justify-center min-h-screen px-4">
+        <div class="w-full max-w-md">
+            <h1 class="text-4xl font-bold text-center text-gray-800">
+                Clinic Cloud Storage
+            </h1>
+
+            <p class="text-center text-gray-500 mt-2 mb-10">
+                Sign in to access your clinic's cloud storage and manage patient records.
+            </p>
+
+            <div class="mb-6">
+                <label class="block text-gray-700 mb-2 font-medium">
+                    Email
+                </label>
+                
+                <input 
+                type="email"
+                placeholder="your.email@clinic.com"
+                class="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+
+            <div class="mb-6">
+                <label class="block text-gray-700 mb-2 font-medium">
+                    Password
+                </label>
+                
+                <input 
+                type="password"
+                placeholder="Enter your password"
+                class="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+
+            <button class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition"
+            onclick="window.location.href='dashboard.html'">
+                Sign In
+            </button>
+
+            <p class="text-center text-blue-600 mt-6">
+                Don't have an account? 
+                <a href="signup.html" class="font-semibold hover:underline">
+                    Sign Up
+                </a>
+            </p>
+
+        </div>
+    </body>
+</html>
