@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>
+            Edit Patient Record
+        </title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link rel="stylesheet" href="style.css">
+    </head>
+
+    <body class="bg-gray-100 min-h-screen">
+        <div class="border-b bg-white px-8 py-4 flex items-center gap-4">
+            <button onclick="window.location.href='dashboard.html'"
+                class="text-gray-600 hover:text-gray-900">
+             ← Back
+            </button>
+
+            <h1 class="text-xl font-semibold text-gray-800">
+                Edit Patient Record
+            </h1>
+        </div>
+
+        <div class="p-8 max-w-l mx-auto">
+            <div id="msg-box" class="hidden mb-5 px-4 py-3 rounded-lg text-sm font-medium"></div>
+
+            <div class="bg-white rounded-lg shadow p-6 mb-6">
+                <h2 class="text-lg font-semibold text-gray-700 mb-6">
+                    Patient Information
+                </h2>
+
+                <div class="grid grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm text-gray-600 mb-2">Patient ID* </label>
+                        <input id="patient_id" type="text" placeholder="P-01"
+                            class="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm text-gray-600 mb-2">Full Name* </label>
+                        <input id="full_name" type="text" placeholder="Enter Full Name"
+                            class="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm text-gray-600 mb-2">Gender* </label>
+                        <select id="gender"
+                            class="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="">Select Gender</option>
+                            <option>Male</option>
+                            <option>Female</option>
+                            <option>Other</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm text-gray-600 mb-2">Age* </label>
+                        <input id="age" type="number" placeholder="Enter age"
+                            class="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm text-gray-600 mb-2">Height (cm) </label>
+                        <input id="height" type="number" placeholder="Enter height"
+                            class="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm text-gray-600 mb-2">Weight (kg) </label>
+                        <input id="weight" type="number" placeholder="Enter weight"
+                            class="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm text-gray-600 mb-2">Blood Pressure</label>
+                        <input id="blood_pressure" type="text" placeholder="120/80"
+                            class="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm text-gray-600 mb-2">Blood Type</label>
+                        <select id="blood_type"
+                            class="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="Unknown">Select Blood Type</option>
+                            <option>A+</option><option>A-</option>
+                            <option>B+</option><option>B-</option>
+                            <option>AB+</option><option>AB-</option>
+                            <option>O+</option><option>O-</option>
+                        </select>
+                    </div>
+
+                    <div class="col-span-2">
+                        <label class="block text-sm text-gray-600 mb-2">Department</label>
+                        <input id="department" type="text"  placeholder="e.g Human Resources"
+                            class="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div> 
+                </div>
+
+                <div class="mt-6">
+                    <label class="block text-sm text-gray-600 mb-2">Medical History</label>
+                    <textarea id="medical_history" rows="4" placeholder="Enter medical history"
+                        class="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow p-6 mb-6">
+                <h2 class="text-lg font-semibold text-gray-700 mb-4">Existing Files</h2>
+                <ul id="existing-files-list" class="space-y-2">
+                    <li class="text-sm text-gray-400">Loading Files...</li>
+                </ul>
+            </div>
+
+            <div class="bg-white rounded-lg shadow p-6 mb-6">
+                <h2 class="text-lg font-semibold text-gray-700 mb-6">Upload New Files</h2>
+                <div id="drop-zone" class="border-2 border-dashed border-gray-300 rounded-lg p-10 text-center cursor-pointer transition">
+                    <p class="text-gray-500">
+                        Drop files here or click to
+                        <span class="text-blue-600 hover:underline">browse</span>
+                    </p>
+
+                    <p class="text-sm text-gray-400 mt-2">PDF or image files only, up to 10MB each</p>
+                </div>
+
+                <input type="file" id="fileInput" multiple accept=".pdf,image/*" class="hidden"
+                        onchange="handleFileSelect(this.files)">
+
+                <ul id="file-preview" class="mt-4 space-y-2"></ul>
+            </div>
+
+            <div class="flex justify-end gap-4">
+                <button class="px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-700 rounded-lg"
+                    onclick="window.location.href='dashboard.html'">
+                    Cancel
+                </button>
+
+                <button id="save-btn" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold">
+                    Save Changes
+                </button>
+            </div>
+        </div>
+
+        <script>
+            let csrfToken ='';
+            let selectedFiles = [];
+            let deleteFileIds = [];
+            let patientDbId = null;
+
+            function escHtml(str) {
+                return String(str)
+                    .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+            }
+
+            const urlParams = new URLSearchParams(window.location.search);
+            patientDbId=urlParams.get('id');
+
+            if (!patientDbId) {
+                alert('No patient specified. Redirecting to dashboard');
+                window.location.href='dashboard.html';
+            }
+
+            async function initCsrf() {
+                try {
+                    const res = await fetch('../api/csrf_token.php');
+                    const data = await res.json();
+                    csrfToken = data.csrf_token || '';
+                } catch (e) {}
+            }
+
+            async function loadPatient(){
+                try{
+                    const res = await fetch(`../api/get_patient.php?id=${patientDbId}`);
+                    const data = await res.json();
+
+                    if (!data.success) {
+                        alert(data.message);
+                        window.location.href='dashboard.html';
+                        return;
+                    }
+
+                    const p = data.patient;
+                    document.getElementById('patient_id').value      = p.patient_id      || '';
+                    document.getElementById('full_name').value        = p.full_name        || '';
+                    document.getElementById('gender').value           = p.gender           || '';
+                    document.getElementById('age').value              = p.age              || '';
+                    document.getElementById('height').value           = p.height_cm        || '';
+                    document.getElementById('weight').value           = p.weight_kg        || '';
+                    document.getElementById('blood_pressure').value   = p.blood_pressure   || '';
+                    document.getElementById('blood_type').value       = p.blood_type       || 'Unknown';
+                    document.getElementById('department').value       = p.department       || '';
+                    document.getElementById('medical_history').value  = p.medical_history  || '';
+
+                    renderExistingFiles(data.files);
+                } catch (err) {
+                    showMsg('Failed to load patient data. Please try again.', true);
+                }
+            }
+
+            function renderExistingFiles(files) {
+                const list = document.getElementById('existing-files-list');
+                if (!files || files.length === 0) {
+                    list.innerHTML='<li class="text-sm text-gray-400">No files uploaded yet.</li>';
+                    return;
+                }
+
+                list.innerHTML=files.map(f => `
+                    <li id="file-item-${f.id}" class="flex items-center justify-between bg-gray-50 border border-gray-200 rounded-lg px-4 py-2">
+                        <div>
+                            <span class="text-sm font-medium text-gray-800">📄 ${escHtml(f.file_name)}</span>
+                            <span class="text-xs text-gray-400 ml-2">${escHtml(f.uploaded_at)}</span>
+                        </div>
+
+                        <div class="flex gap-2">
+                            <a href="${f.view_url}" target="_blank"
+                                class="text-xs bg-blue-600 text-white px-3 py-1.5 rounded-lg hover:bg-blue-700 font-medium">
+                                View
+                            </a>
+
+                            <button onclick="markFileForDeletion(${f.id}, '${escHtml(f.file_name)}')"
+                                class="text-xs bg-red-100 text-red-600 px-3 py-1.5 rounded-lg hover:bg-red-200 font-medium">
+                                Remove
+                            </button>
+                        </div>
+                    </li>
+                `).join('');
+            }
+
+            function markFileForDeletion(fileId, fileName) {
+                if(!deleteFileIds.includes(fileId)) {
+                    deleteFileIds.push(fileId);
+                }
+
+                const item = document.getElementById(`file-item-${fileId}`);
+                if (item) {
+                    item.classList.add('opacity-40');
+                    item.innerHTML = `
+                        <span class="text-sm text-gray-400 line-through">📄 ${escHtml(fileName)} - will be removed on save </span>
+
+                        <button onclick="undoFileDeletion(${fileId})"
+                            class="text-xs text-blue-500 hover:underline font-medium">
+                            Button
+                        </button>
+                    `;
+                }
+            }
+ 
+            function undoFileDeletion(fileId) {
+                deleteFileIds = deleteFileIds.filter(id=>id !==fileId);
+                loadPatient();
+            }
+
+            const dropZone = document.getElementById('drop-zone');
+            dropZone.addEventListener('dragover', e=> {e.preventDefault(); dropZone.classList.add('border-blue-400', 'bg-blue-50'); });
+            dropZone.addEventListener('dragleave', ()=> dropZone.classList.remove('border-blue-400', 'bg-blue-50'));
+            dropZone.addEventListener('drop', e => {
+                e.preventDefault();
+                dropZone.classList.remove('border-blue-400', 'bg-blue-50');
+                handleFileSelect(e.dataTransfer.files);
+            });
+            dropZone.addEventListener('click', () => document.getElementById('fileInput').click());
+
+            function handleFileSelect(files) {
+                for (const file of files) {
+                    if (!selectedFiles.find(f => f.name === file.name && f.size === file.size)) {
+                        selectedFiles.push(file);
+                    }
+                }
+                renderNewFilePreview();
+            }
+
+            function removeNewFile(index) {
+                selectedFiles.splice(index, 1);
+                renderNewFilePreview();
+            }
+
+            function renderNewFilePreview() {
+                const list = document.getElementById('file-preview');
+                if (!selectedFiles.length) { list.innerHTML = ''; return; }
+                list.innerHTML = selectedFiles.map((f, i) => `
+                    <li class="flex items-center justify-between bg-gray-50 border border-gray-200 rounded-lg px-4 py-2">
+                        
+                        <span class="text-sm text-gray-700 truncate max-w-xs">📄 ${escHtml(f.name)}</span>
+                        <div class="flex items-center gap-3">
+                            <span class="text-xs text-gray-400">${(f.size / 1024).toFixed(1)} KB</span>
+                            <button onclick="removeNewFile(${i})"
+                                class="text-red-400 hover:text-red-600 text-xs font-bold">✕ Remove</button>
+                        </div>
+
+                    </li>
+                `).join('');
+            }
+
+            const msgBox = document.getElementById('msg-box');
+            const saveBtn = document.getElementById('save-btn');
+
+            function showMsg(text, isError = true) {
+                msgBox.textContent = text;
+                msgBox.className = isError
+                     ? 'mb-5 px-4 py-3 rounded-lg text-sm font-medium bg-red-50 text-red-700 border border-red-200'
+                     : 'mb-5 px-4 py-3 rounded-lg text-sm font-medium bg-green-50 text-green-700 border border-green-200';
+                msgBox.scrollIntoView({ behavior: 'smooth', block: 'center'});
+            }
+
+            saveBtn.addEventListener('click', async() => {
+                const patient_id = document.getElementById('patient_id').value.trim();
+                const full_name = document.getElementById('full_name').value.trim();
+                const gender = document.getElementById('gender').value;
+                const age = document.getElementById('age').value.trim();
+                const height = document.getElementById ('height').value.trim();
+                const weight = document.getElementById('weight').value.trim();
+                const blood_pressure = document.getElementById('blood_pressure').value.trim();
+                const blood_type = document.getElementById('blood_type').value;
+                const department = document.getElementById('department').value.trim();
+                const medical_history = document.getElementById('medical_history').value.trim();
+
+                if (!patient_id ||!full_name || !gender || !age) {
+                    showMsg('Patient ID, Full Name, Gender, and Age are required');
+                    return;
+                }
+
+                saveBtn.disabled=true;
+                saveBtn.textContent='Saving...';
+
+                const form = new FormData();
+                form.append('patient_db_id', patientDbId);
+                form.append('patient_id', patient_id);
+                form.append('full_name', full_name);
+                form.append('gender', gender);
+                form.append('age', age);
+                form.append('height', height);
+                form.append('weight', weight);
+                form.append('blood_pressure', blood_pressure);
+                form.append('blood_type', blood_type);
+                form.append('department', department);
+                form.append('medical_history', medical_history);
+                form.append('delete_file_ids', JSON.stringify(deleteFileIds));
+                form.append('csrf_token', csrfToken);
+                selectedFiles.forEach(file => form.append('medical_files[]', file));
+
+                try {
+                    const res = await fetch('../api/update_patient.php', {method: 'POST', body: form});
+                    const data = await res.json();
+
+                    if(data.success) {
+                        showMsg(data.message, false);
+                        setTimeout(() => window.location.href = 'dashboard.html', 1500);
+                    } else {
+                        showMsg(data.message);
+                        saveBtn.disabled=false;
+                        saveBtn.textContent = "Save Changes";
+                        await initCsrf();
+                    }
+                } catch (err) {
+                    showMsg('Server Error. Please try again');
+                    saveBtn.disabled = false;
+                    saveBtn.textContent ='Save Changes';
+                }
+            });
+
+            initCsrf();
+            loadPatient();
+
+        </script>
+    </body>
+</html>
