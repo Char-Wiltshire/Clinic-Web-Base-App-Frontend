@@ -3,26 +3,28 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>CLINIC CLOUD STORAGE</title>
+        <title>PCPPI</title>
         <script src="https://cdn.tailwindcss.com"></script>
+        <link rel="stylesheet" href="style.css">
     </head>
-
-    <body class="bg-gray-100 flex items-center justify-center min-h-screen px-4">
-        <div class="w-full max-w-md">
-            <h1 class="text-4xl font-bold text-center text-gray-800">
-                Clinic Cloud Storage
+    <body class="auth-page">
+        <div class="auth-card">
+            <h1 class="auth-title">
+                PCPPI Clinic Storage
             </h1>
 
-            <p class="text-center text-gray-500 mt-2 mb-10">
+            <p class="auth-subtitle">
                 Sign in to access your clinic's cloud storage and manage patient records.
             </p>
+
+            <div id="msg-box" class="hidden mb-5 px-4 py-3 rounded-lg text-sm font-medium"></div>
 
             <div class="mb-6">
                 <label class="block text-gray-700 mb-2 font-medium">
                     Email
                 </label>
                 
-                <input 
+                <input id="email" 
                 type="email"
                 placeholder="your.email@clinic.com"
                 class="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500">
@@ -33,24 +35,82 @@
                     Password
                 </label>
                 
-                <input 
+                <input id="password"
                 type="password"
                 placeholder="Enter your password"
                 class="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500">
             </div>
 
-            <button class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition"
-            onclick="window.location.href='dashboard.html'">
+            <button id = "login-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition">
                 Sign In
             </button>
 
-            <p class="text-center text-blue-600 mt-6">
+            <p class="auth-footer">
                 Don't have an account? 
-                <a href="signup.html" class="font-semibold hover:underline">
+                <a href="signup.html">
                     Sign Up
                 </a>
             </p>
 
         </div>
+
+        <script>
+            let csrfToken = '';
+            async function initCsrf() {
+                try{
+                    const res = await fetch('../api/csrf_token.php');
+                    const data = await res.json();
+                    csrfToken = data.csrf_token || '';
+                } catch(e) {}
+            }
+
+            const btn = document.getElementById("login-btn");
+            const msgBox = document.getElementById("msg-box");
+
+            function showMsg(text, isError = true) {
+                msgBox.textContent = text;
+                msgBox.className = isError
+                    ? 'mb-5 px-4 py-3 rounded-lg text-sm font-medium bg-red-50 text-red-700 border border-red-200'
+                    : 'mb-5 px-4 py-3 rounded-lg text-sm font-medium bg-green-50 text-green-700 border border-green-200';
+            }
+
+            btn.addEventListener('click', async() => {
+                const email = document.getElementById('email').value.trim();
+                const password = document.getElementById('password').value;
+
+                if (!email || !password) { showMsg('Please enter your email and password: '); return; }
+
+                btn.disabled = true;
+                btn.textContent = "Signing In...";
+
+                const form = new FormData();
+                form.append('email', email);
+                form.append('password', password);
+                form.append('csrf_token', csrfToken);
+
+                try {
+                    const res = await fetch('../api/login.php', {method: 'POST', body: form});
+                    const data = await res.json();
+
+                    if (data.success) {
+                        showMsg('Login Successful! Redirecting...', false);
+                        setTimeout(()=> window.location.href = data.redirect, 800);
+                    } else {
+                        showMsg(data.message);
+                        btn.disabled = false;
+                        btn.textContent = 'Sign-In';
+                        await initCsrf();
+                    }
+                } catch (err) {
+                    showMsg('Server Error. Please try again.');
+                    btn.disabled = false;
+                    btn.textContent = 'Sign In';
+                }
+            });
+
+            document.addEventListener('keydown', e=>{if (e.key === 'Enter') btn.click(); });
+            initCsrf();
+        </script>
+
     </body>
 </html>
