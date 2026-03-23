@@ -105,14 +105,63 @@
             </div>
 
             <div class="bg-white rounded-lg shadow p-6 mb-6">
-                <h2 class="text-lg font-semibold text-gray-700 mb-4">Existing Files</h2>
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-lg font-semibold text-gray-700 mb-4">Existing Files</h2>
+
+                    <div class="flex items-center gap-2">
+                        <label class="text-xs text-gray-500">Sort by:</label>
+                        <select id="sort-by"
+                            class="text-xs border border-gray-300 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-400">
+                            <option value="uploaded_at">Upload Date</option>
+                            <option value="exam_date">Exam Date</option>
+                            <option value="exam_type">Exam Type</option>
+                            <option value="file_name">File Name</option>
+                            <option value="file_type">File Type</option>
+                        </select>
+
+                        <select id="sort-order"
+                            class="text-xs border border-gray-300 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-400">
+                            <option value="desc">Newest First</option>
+                            <option value="asc">Oldest First</option>
+                        </select>
+                        <button onclick="applySort()"
+                            class="text-xs bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg font-medium">
+                            Apply
+                        </button>
+                    </div>
+                </div>
+
                 <ul id="existing-files-list" class="space-y-2">
                     <li class="text-sm text-gray-400">Loading Files...</li>
                 </ul>
+                
             </div>
 
             <div class="bg-white rounded-lg shadow p-6 mb-6">
                 <h2 class="text-lg font-semibold text-gray-700 mb-6">Upload New Files</h2>
+
+                <div class="grid grid-cols-2 gap-4 mb-5">
+                    <div>
+                        <label class="block text-sm text-gray-600 mb-2">Exam Type*</label>
+                        <select id="exam_type"
+                            class="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="">Select Exam Type</option>
+                            <option value="APE">APE (Annual Physical Exam)</option>
+                            <option value="PEME">PEME (Pre-Employment Medical Exam)</option>
+                            <option value="Others">Others</option>
+                        </select>
+
+                        <input id="exam_type_other" type="text" placeholder="Specify exam type"
+                            class="hidden w-full border border-gray-300 rounded-lg p-3 mt-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm text-gray-600 mb-2">Exam Date<span class="text-gray-400">(optional)</span></label>
+                        <input id="exam_date" type="date"
+                            class="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                </div>
+
                 <div id="drop-zone" class="border-2 border-dashed border-gray-300 rounded-lg p-10 text-center cursor-pointer transition">
                     <p class="text-gray-500">
                         Drop files here or click to
@@ -145,6 +194,8 @@
             let selectedFiles = [];
             let deleteFileIds = [];
             let patientDbId = null;
+            let currentSort = 'uploaded_at';
+            let currentOrder ='desc';
 
             function escHtml(str) {
                 return String(str)
@@ -170,7 +221,7 @@
 
             async function loadPatient(){
                 try{
-                    const res = await fetch(`../api/get_patient.php?id=${patientDbId}`);
+                    const res = await fetch(`../api/get_patient.php?id=${patientDbId}&sort=${currentSort}&order=${currentOrder}`);
                     const data = await res.json();
 
                     if (!data.success) {
@@ -208,6 +259,9 @@
                     <li id="file-item-${f.id}" class="flex items-center justify-between bg-gray-50 border border-gray-200 rounded-lg px-4 py-2">
                         <div>
                             <span class="text-sm font-medium text-gray-800">📄 ${escHtml(f.file_name)}</span>
+                            <div class="flex items-center gap-2 mt-1 flex-wrap">
+                                ${f.exam_type ? `<span class="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-medium">${escHtml(f.exam_type)}</span>` : ''}
+                                ${f.exam_date ? `<span class="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">📅 ${escHtml(f.exam_date)}</span>` : ''}     
                             <span class="text-xs text-gray-400 ml-2">${escHtml(f.uploaded_at)}</span>
                         </div>
 
@@ -336,6 +390,23 @@
                 form.append('medical_history', medical_history);
                 form.append('delete_file_ids', JSON.stringify(deleteFileIds));
                 form.append('csrf_token', csrfToken);
+
+                const examTypeSel = document.getElementById('exam_type').value;
+                const examTypeOther = document.getElementById('exam-type_other').value.trim();
+                const exam_type = examTypeSel === 'Others' ? examTypeOther : examTypeSel;
+                const exam_date = document.getElementById('exam_date').value;
+
+                if (selectedFiles.length > 0) {
+                    if(!exam_type) {
+                        showMsg('Please select an Exam Type before uploading files');
+                        savebtn.disabled=false;
+                        savebtn.textContent='Save Changes';
+                        return;
+                    }
+                }
+
+                form.append('exam_type', exam_type);
+                form.append('exam_date', exam_date);
                 selectedFiles.forEach(file => form.append('medical_files[]', file));
 
                 try {
@@ -357,6 +428,32 @@
                     saveBtn.textContent ='Save Changes';
                 }
             });
+
+            document.getElementById('exam_type').addEventListener('change', function() {
+                const other = document.getElementById('exam_type_other');
+                if (this.value === 'Others') {
+                    other.classList.remove('hidden');
+                } else {
+                    other.classList.add('hidden');
+                    other.value = '';
+                }
+            });
+
+            document.getElementById('sort-by').addEventListener('change', function() {
+                const orderSel= document.getElementById('sort-order');
+                const isDate = this.value === 'uploaded_at' || this.value === 'exam_date';
+                orderSel.options[0].text= isDate ? 'Newest First' : 'A → Z';
+                orderSel.options[1].text= isDate ? 'Oldest First' : 'Z → A';
+            });
+
+            function applySort() {
+                currentSort = document.getElementById('sort-by').value;
+                currentOrder = document.getElementById('sort-order').value;
+
+                document.getElementById('existing-files-list').innerHTML =
+                    '<li class="text-sm text-gray-400">Loading Files...</li>';
+                loadPatient();
+            }
 
             initCsrf();
             loadPatient();

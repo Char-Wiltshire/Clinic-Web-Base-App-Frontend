@@ -60,7 +60,7 @@
                     <div id="info-content" class="hidden">
                         <div class="grid grid-cols-2 gap-6">
                             <div>
-                                <p class="text-xs text-gray-400 uppercase tracking-wide mb-1">Patient ID</p>
+                                <p class="text-xs text-gray-400 uppercase tracking-wide mb-1">Employee ID</p>
                                 <p id="view-patient-id" class="text-gray-800 font semi-bold"></p>
                             </div>
 
@@ -112,28 +112,441 @@
                     </div>
                 </div>
             </div>
-        </div>
+        
 
-        <div id="panel-files" class="hidden">
-            <div class="bg-white rounded-lg shadow p-6 mb-6">
-                <h2 class="text-base font-semibold text-gray-700 mb-4">Upload New Files</h2>
-                <div id="drop-zone"
-                    class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition">
+            <div id="panel-files" class="hidden">
+                <div class="bg-white rounded-lg shadow p-6 mb-6">
+                    <h2 class="text-base font-semibold text-gray-700 mb-4">Upload New Files</h2>
+
+                    <div class="grid grid-cols-2 gap-4 mb-5">
+                        <div>
+                            <label class="block text-sm text-gray-600 mb-2">Exam Type*</label>
+                            <select id="exam_type"
+                                class="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="">Select Exam Type</option>
+                                <option value="APE">APE (Annual Physical Exam)</option>
+                                <option value="PEME">PEME (Pre-Employment Medical Exam)</option>
+                                <option value="Others">Others</option>
+                            </select>
+
+                            <input id="exam_type_other" type="text" placeholder="Specify exam type"
+                                class="hidden w-full border border-gray-300 rounded-lg p-3 mt-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm text-gray-600 mb-2">Exam Date <span class="text-gray-400">(optional)</span></label>
+                            <input id="exam_date" type="date"
+                                class="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                    </div>
+
+                    <div id="drop-zone"
+                        class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition">
                 
-                    <p class="text-gray-500 text-sm">Drop files here or click to
-                        <span class="text-blue-600 hover:underline">browse</span>
-                    </p>
+                        <p class="text-gray-500 text-sm">Drop files here or click to
+                            <span class="text-blue-600 hover:underline">browse</span>
+                        </p>
 
-                    <p class="text-xs text-gray-400 mt-1">PDF or image files only, up to 10MB each</p>
+                        <p class="text-xs text-gray-400 mt-1">PDF or image files only, up to 10MB each</p>
+                    </div>
+
+                    <input type="file" id="fileInput" multiple accept=".pdf, image/*" class="hidden"
+                        onchange="handleFileSelect(this.files)">
+                
+                    <ul id="file-preview" class="mt-3 space-y-2"></ul>
+
+                    <div id="upload-msg" class="hidden mt-3 px-4 py-2 rounded-lg text-sm"></div>
+
+                    <button id="upload-btn"
+                        class="hidden mt-4 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg text-sm font-semibold">
+                        Upload Files
+                    </button>
                 </div>
 
-                <input type="file" id="fileInput" multiple accept=".pdf, image/*" class="hidden"
-                    onchange="handleFileSelect(this.files)">
-                
-                <ul id="file-preview" class="mt-3 space-y-2"></ul>
+                <div class="bg-white rounded-lg shadow p-6">
+                    <h2 class="text-base font-semibold text-gray-700 mb-4">Existing Files</h2>
 
-                
+                    <div class="flex items-center gap-3 mb-4 flex-wrap">
+                        <label class="text-sm text-gray-500 font-medium">Sort by:</label>
+                        <select id="sort-by"
+                            class="text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400">
+                            <option value="uploaded_at">Upload Date</option>
+                            <option value="exam_date">Exam Date</option>
+                            <option value="exam_type">Exam Type</option>
+                            <option value="file_name">File Name</option>
+                            <option value="file_type">File Type</option>
+                        </select>
+                        <select id="sort-order"
+                            class="text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400">
+                            <option value="desc">Newest First</option>
+                            <option value="asc">Oldest First</option>
+                        </select>
+                        <button onclick="applySort()"
+                            class="text-sm bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium">
+                            Apply
+                        </button>
+                    </div>
+
+                    <div id="files-loading" class="text-center text-gray-400 py-6">Loading Files...</div>
+                        <ul id="files-list" class="hidden space-y-3"></ul>
+                        <p id="files-empty" class="hidden text-center text-gray-400 text-sm py-6">
+                            No files uploaded for this patient.
+                        </p>
+                </div>
             </div>
         </div>
+
+        <div id="delete-modal" class="hidden fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 p-4">
+            <div class="bg-white rounded-xl shadow-xl w-full max-w-sm p-6">
+                <h2 class="text-lg font-bold text-gray-800 mb-2">Delete Patient Record</h2>
+                
+                <p class="text-gray-600 text-sm mb-1">You are about to permanently delete:</p>
+                <p id="delete-name" class="font-semibold text-red-600 mb-4"></p>
+                <p class="text-gray-500 text-sm mb-6">
+                    This will remove all of their data and uploaded files.
+                    This action <strong>cannot be undone.</strong>
+                </p>
+
+                <div id="delete-msg" class="hidden mb-4 px-3 py-2 rounded text-sm"></div>
+                <div class="flex gap-3 justify-end">
+                    <button onclick="closeDeleteModal()"
+                        class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium">
+                        Cancel
+                    </button>
+
+                    <button id="confirm-delete-btn" onclick="confirmDelete()"
+                        class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium">
+                        Yes, Delete Permanently
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            function escHtml(str) {
+                return String(str)
+                    .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+            }
+
+            let csrfToken='';
+            let patientDbId=null;
+            let patientName='';
+            let selectedFiles=[];
+            let currentSort='uploaded_at';
+            let currentOrder='desc';
+
+            const urlParams = new URLSearchParams(window.location.search);
+            patientDbId = urlParams.get('id');
+
+            if (!patientDbId) {
+                alert('No patient specified. Redirecting to dashboard.');
+                window.location.href='dashboard.html';
+            }
+
+            async function initCsrf() {
+                try {
+                    const res = await fetch('../api/csrf_token.php');
+                    const data = await res.json();
+                    csrfToken = data.csrf_token || '';
+                } catch (e) {}
+            }
+
+            async function loadPatient() {
+                try {
+                    const res = await fetch(`../api/get_patient.php?id=${patientDbId}&sort=${currentSort}&order=${currentOrder}`);
+                    const data = await res.json();
+
+                    if (!data.success) {
+                        alert(data.message);
+                        window.location.href = 'dashboard.html';
+                        return;
+                    }
+
+                    const p = data.patient;
+                    patientName = p.full_name;
+
+                    document.getElementById('header-name').textContent = p.full_name;
+                    document.getElementById('header-pid').textContent = 'Patient ID: ' + p.patient_id;
+
+                    document.getElementById('view-patient-id').textContent = p.patient_id || '—';
+                    document.getElementById('view-full-name').textContent = p.full_name || '—';
+                    document.getElementById('view-gender').textContent = p.gender || '—';
+                    document.getElementById('view-age').textContent = p.age || '—';
+                    document.getElementById('view-height').textContent = p.height_cm || '—';
+                    document.getElementById('view-weight').textContent = p.weight_kg || '—';
+                    document.getElementById('view-bp').textContent = p.blood_pressure || '—';
+                    document.getElementById('view-blood-type').textContent = p.blood_type || '—';
+                    document.getElementById('view-department').textContent = p.department || '—';
+                    document.getElementById('view-history').textContent = p.medical_history || '—';
+
+                    document.getElementById('info-loading').classList.add('hidden');
+                    document.getElementById('info-content').classList.remove('hidden');
+
+                    const count = data.files ? data.files.length : 0;
+                    document.getElementById('file-count-badge').textContent = count;
+
+                    renderExistingFiles(data.files);
+                } catch(err) {
+                    alert('Failed to load patient data. Please try again');
+                }
+            }
+
+            function switchTab(tab) {
+                const panels = ['info', 'files'];
+                panels.forEach(t => {
+                    document.getElementById(`panel-${t}`).classList.toggle('hidden', t !== tab);
+                    const btn = document.getElementById(`tab-${t}`);
+
+                    if (t === tab) {
+                        btn.classList.add('border-blue-600', 'text-blue-600');
+                        btn.classList.remove('border-transparent','text-gray-500')
+                    } else {
+                        btn.classList.remove('border-blue-600', 'text-blue-600');
+                        btn.classList.add('border-transparent', 'text-gray-500');
+                    }
+                });
+            }
+
+            document.getElementById('edit-btn').addEventListener('click', () => {
+                window.location.href=`edit_patient.html?id=${patientDbId}`;
+            });
+
+            document.getElementById('delete-btn').addEventListener('click', () => {
+                document.getElementById('delete-name').textContent = patientName;
+                document.getElementById('delete-msg').classList.add('hidden');
+                document.getElementById('confirm-delete-btn').disabled = false;
+                document.getElementById('confirm-delete-btn').textContent = 'Yes, Delete Permanently';
+                document.getElementById('delete-modal').classList.remove('hidden');
+            });
+
+            function closeDeleteModal() {
+                document.getElementById('delete-modal').classList.add('hidden');
+            }
+
+            async function confirmDelete() {
+                const btn = document.getElementById('confirm-delete-btn');
+                const msgBox = document.getElementById('delete-msg');
+                btn.disabled = true;
+                btn.textContent = 'Deleting...';
+
+                const form = new FormData();
+                form.append('patient_db_id', patientDbId);
+                form.append('csrf_token', csrfToken);
+
+                try {
+                    const res = await fetch('../api/delete_patient.php', {method: 'POST', body: form});
+                    const data = await res.json();
+
+                    if (data.success) {
+                        window.location.href='dashboard.html';
+                    } else {
+                        msgBox.textContent = data.message;
+                        msgBox.className = 'mb-4 px-3 py-2 rounded text-sm bg-red-50 text-red-600 border border-red-200';
+                        msgBox.classList.remove('hidden');
+                        btn.disabled = false;
+                        btn.textContent = 'Yes, Delete Permanently';
+                        await initCsrf();
+                    }
+                } catch (err) {
+                    msgBox.textContent = 'Server Error. Please try again.';
+                    msgBox.className = 'mb-4 px-3 py-2 rounded text-sm bg-red-50 text-red-600 border border-red-200';
+                    msgBox.classList.remove('hidden');
+                    btn.disabled = false;
+                    btn.textContent = 'Yes, Delete Permanently';
+                }
+            }
+
+            document.getElementById('delete-modal').addEventListener('click', function (e) {
+                if (e.target === this) closeDeleteModal();
+            });
+
+            function renderExistingFiles(files) {
+                const loading = document.getElementById('files-loading');
+                const list = document.getElementById('files-list');
+                const empty = document.getElementById('files-empty');
+
+                loading.classList.add('hidden');
+
+                if (!files || files.length === 0) {
+                    empty.classList.remove('hidden');
+                    return;
+                }
+
+                list.classList.remove('hidden');
+                list.innerHTML = files.map(f => `
+                    <li class="flex items-center justify-between bg-gray-50 border border-gray-200 rounded-lg px-4 py-3">
+                        <div>
+                            <p class="text-sm font-semibold text-gray-800">📄 ${escHtml(f.file_name)}</p>
+                            <div class="flex items-center gap-2 mt-1 flex-wrap">
+                                ${f.exam_type ? `<span class="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-medium"> ${escHtml(f.exam_type)}</span>` : ''}
+                                ${f.exam_date ? `<span class="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">📅 ${escHtml(f.exam_date)}</span>` : ''}
+
+                                <span class="text-xs text-gray-400">Uploaded ${escHtml(f.uploaded_at)}</span>
+                            </div>
+                        </div>
+
+                        <div class="flex gap-2">
+                            <a href="${f.view_url}" target="_blank"
+                                class ="text-xs bg-blue-600 text-white px-3 py-1.5 rounded-lg hover:bg-blue-700 font-medium">
+                                View
+                            </a>
+                            <a href="${f.download_url}"
+                                class="text-xs bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg hover:bg-gray-300 font-medium">
+                                Download
+                            </a>
+                        </div>
+                    </li>
+                `).join('');
+            }
+
+            const dropZone = document.getElementById('drop-zone');
+            dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('border-blue-400', 'bg-blue-50'); });
+            dropZone.addEventListener('dragleave', () => dropZone.classList.remove('border-blue-400', 'bg-blue-50'));
+            dropZone.addEventListener('drop', e => {
+                e.preventDefault();
+                dropZone.classList.remove('border-blue-400', 'bg-blue-50');
+                handleFileSelect(e.dataTransfer.files);
+            });
+
+            dropZone.addEventListener('click', () => document.getElementById('fileInput').click());
+
+            function handleFileSelect(files) {
+                for (const file of files) {
+                    if (!selectedFiles.find(f => f.name === file.name && f.size === file.size)) {
+                        selectedFiles.push(file);
+                    }
+                }
+
+                renderFilePreview();
+            }
+
+            function removeFile(index) {
+                selectedFiles.splice(index, 1);
+                renderFilePreview();
+            }
+
+            function renderFilePreview() {
+                const list = document.getElementById('file-preview');
+                const uploadBtn = document.getElementById('upload-btn');
+
+                if (!selectedFiles.length) {
+                    list.innerHTML = '';
+                    uploadBtn.classList.add('hidden');
+                    return;
+                }
+
+                uploadBtn.classList.remove('hidden');
+                list.innerHTML = selectedFiles.map((f, i) => `
+                    <li class="flex items-center justify-between bg-gray-50 border border-gray-200 rounded-lg px-4 py-2">
+                        <span class="text-sm text-gray-700 truncate max-w-xs">📄${escHtml(f.name)}</span>
+                        <div class="flex items-center gap-3">
+                            <span class="text-xs text-gray-400">${(f.size / 1024).toFixed(1)} KB </span>
+                            <button onclick="removeFile(${i})"
+                                class="text-red-400 hover:text-red-600 text-xs font-bold">
+                                ✕
+                            </button>
+                        </div>
+                    </li>
+                `).join('');
+            }
+
+            document.getElementById('upload-btn').addEventListener('click', async () => {
+                if (!selectedFiles.length) return;
+
+                const btn = document.getElementById('upload-btn');
+                const msgBox = document.getElementById('upload-msg');
+                btn.disabled = true;
+                btn.textContent = 'Uploading...';
+
+                const examTypeSel   = document.getElementById('exam_type').value;
+                const examTypeOther = document.getElementById('exam_type_other').value.trim();
+                const exam_type     = examTypeSel === 'Others' ? examTypeOther : examTypeSel;
+                const exam_date     = document.getElementById('exam_date').value;
+
+                if (!exam_type) {
+                    msgBox.textContent = 'Please select an Exam Type before uploading.';
+                    msgBox.className   = 'mt-3 px-4 py-2 rounded-lg text-sm bg-red-50 text-red-700 border border-red-200';
+                    msgBox.classList.remove('hidden');
+                    btn.disabled    = false;
+                    btn.textContent = 'Upload Files';
+                    return;
+                }
+
+                const form = new FormData ();
+                form.append('patient_db_id', patientDbId);
+                form.append('csrf_token', csrfToken);
+
+                form.append('patient_id', document.getElementById('view-patient-id').textContent);
+                form.append('full_name', document.getElementById('view-full-name').textContent);
+                form.append('gender', document.getElementById('view-gender').textContent);
+                form.append('age', document.getElementById('view-age').textContent);
+                form.append('delete_file_ids', JSON.stringify([]));
+                form.append('exam_type',  exam_type);
+                form.append('exam_date',  exam_date);
+                selectedFiles.forEach(file => form.append('medical_files[]', file));
+
+                try {
+                    const res = await fetch('../api/update_patient.php', {method: 'POST', body: form });
+                    const data = await res.json();
+
+                    msgBox.textContent = data.message;
+                    msgBox.className = data.success
+                        ? 'mt-3 px-4 py-2 rounded-lg text-sm bg-green-50 text-green-700 border border-green-200'
+                        : 'mt-3 px-4 py-2 rounded-lg text-sm bg-red-50 text-red-700 border border-red-200';
+                    msgBox.classList.remove('hidden');
+
+                    if (data.success) {
+                        selectedFiles = [];
+                        renderFilePreview();
+
+                        document.getElementById('files-loading').classList.remove('hidden');
+                        document.getElementById('files-list').classList.add('hidden');
+                        document.getElementById('files-empty').classList.add('hidden');
+                        await loadPatient();
+                    }
+                } catch (err) {
+                    msgBox.textContent = 'Upload failed. Please try again.';
+                    msgBox.className = 'mt-3 px-4 py-2 rounded-lg text-sm bg-red-50 text-red-700 border border-red-200';
+                    msgBox.classList.remove('hidden');
+
+                } finally {
+                    btn.disabled = false;
+                    btn.textContent = 'Upload Files';
+                    await initCsrf();
+                }
+            });
+
+            document.getElementById('exam_type').addEventListener('change', function () {
+                const other = document.getElementById('exam_type_other');
+                if (this.value === 'Others') {
+                    other.classList.remove('hidden');
+                } else {
+                    other.classList.add('hidden');
+                    other.value = '';
+                }
+            });
+
+            document.getElementById('sort-by').addEventListener('change', function() {
+                const orderSel = document.getElementById('sort-order');
+                const isDate = this.value === 'uploaded_at' || this.value === 'exam_date';
+                orderSel.options[0].text = isDate ? 'Newest First' : 'A → Z';
+                orderSel.options[1].text = isDate ? 'Oldest First' : 'Z → A';
+            });
+
+            function applySort() {
+                currentSort = document.getElementById('sort-by').value;
+                currentOrder = document.getElementById('sort-order').value;
+
+                document.getElementById('files-loading').classList.remove('hidden');
+                document.getElementById('files-list').classList.add('hidden');
+                document.getElementById('files-empty').classList.add('hidden');
+                loadPatient();
+            }
+
+            initCsrf();
+            loadPatient();
+
+        </script>
     </body>
 </html>
